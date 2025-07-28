@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version "8.3.0"
+    id 'maven-publish'
+}
+
+group = 'uk.minersonline.games'
+def gitHash = 'unknown'
+def proc = 'git rev-parse --short HEAD'.execute()
+proc.in.eachLine { gitHash = it.trim() }
+proc.waitFor()
+
+version = "${gitHash}-SNAPSHOT"
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'net.minestom:minestom:2025.07.14-1.21.7'
+    implementation 'ch.qos.logback:logback-classic:1.5.13'
+    implementation 'org.yaml:snakeyaml:2.4'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21)) // Minestom has a minimum Java version of 21
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = project.group
+            artifactId = 'minestom-mod-compat'
+            version = project.version
+        }
+    }
+    repositories {
+        maven {
+            name = 'miners_online_snapshots'
+            url = System.getenv("REPO_URL") ?: uri("https://maven.minersonline.uk/snapshots")
+            credentials {
+                username = findProperty("repoUser") ?: System.getenv("REPO_USER")
+                password = findProperty("repoPassword") ?: System.getenv("REPO_PASSWORD")
+            }
+            allowInsecureProtocol = false // set to true only if needed
+        }
+    }
+}
