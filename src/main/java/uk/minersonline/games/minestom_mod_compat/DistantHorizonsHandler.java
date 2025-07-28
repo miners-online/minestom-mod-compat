@@ -3,6 +3,7 @@ package uk.minersonline.games.minestom_mod_compat;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
+import net.minestom.server.event.player.PlayerLoadedEvent;
 import net.minestom.server.event.player.PlayerPluginMessageEvent;
 import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.network.packet.server.common.PluginMessagePacket;
@@ -31,6 +32,14 @@ public class DistantHorizonsHandler {
                 return;
 
             sendLevelInit(event.getPlayer());
+        });
+
+        globalEventHandler.addListener(PlayerLoadedEvent.class, event -> {
+            Player player = event.getPlayer();
+            if (player.getInstance() == null) return; // Ensure the player is in an instance
+
+            // Send the level initialization message when the player loads
+            sendLevelInit(player);
         });
     }
 
