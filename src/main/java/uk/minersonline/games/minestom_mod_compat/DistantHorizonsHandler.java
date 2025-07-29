@@ -14,6 +14,7 @@ import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.network.packet.server.common.PluginMessagePacket;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DistantHorizonsHandler {
@@ -60,8 +61,9 @@ public class DistantHorizonsHandler {
         EventDispatcher.call(event);
 
         String levelKey = event.getLevelID();
-        buffer.write(NetworkBuffer.VAR_INT, levelKey.length());
-        buffer.write(NetworkBuffer.BYTE_ARRAY, levelKey.getBytes());
+        byte[] bytes = levelKey.getBytes(StandardCharsets.UTF_8);
+        buffer.write(NetworkBuffer.SHORT, (short) bytes.length);
+        buffer.write(NetworkBuffer.RAW_BYTES, bytes);
 
         buffer.write(NetworkBuffer.LONG, System.currentTimeMillis());
 
